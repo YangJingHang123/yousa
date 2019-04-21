@@ -7,7 +7,7 @@ _date_ch = r"[今明后]天"
 # 中文描述的时段
 _front_time_ch = r"([上中下]午)|([早晚]上)|(凌晨)"
 # 中文描述的时间
-_time_ch = r"(\d{1,2}点)+(\d{1,2}分)?"
+_time_ch = r"(\d{1,2}点)+(\d{1,2}分+)?"
 
 # 时间戳格式的日期
 _date_ts = r"\d{1,2},\d{1,2}"
@@ -71,7 +71,7 @@ class TimeCommand(object):
         if match_res and _set_time == match_res.group(0):
             return match_res
         else:
-            raise ValueError("Non-standard format!")
+            raise ValueError("Non-standard format! Please send '帮助' for help!")
 
     def set_time_datetime(self, _set_time: str) -> Callable:
         '''
@@ -178,7 +178,10 @@ class TimeCommand(object):
         set_time = self.set_time_datetime(set_time)
         item = self.parse_item(item)
 
-        return (set_time, item)
+        if set_time >= datetime.datetime.now():
+            return (set_time, item)
+        else:
+            raise ValueError("设置的时间必须在此刻之后!")
 
     def parse_item(self, item: str) -> str:
         '''
