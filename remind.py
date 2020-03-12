@@ -63,7 +63,7 @@ class TimeCommand(object):
         '''
         self.help_word = help_word
         
-    def check_set_time(self, _set_time: str) -> bool:
+    def check_set_time(self, _set_time: str) -> Callable:
         '''
         检查提取出来的 set_time 格式是否符合规范, 此处还应该检查时间是否正确
         '''
@@ -78,7 +78,6 @@ class TimeCommand(object):
         从匹配结果里提取出 datetime()
         '''
         date_time = self.check_set_time(_set_time)
-        print(date_time.groups())
         _date           = date_time.group(1)
         _front_time_ch  = date_time.group(4)
         _time           = date_time.group(8)
@@ -194,10 +193,7 @@ class TimeCommand(object):
 
 
 if __name__ == "__main__":
-    # front = input()
-    # print(check_set_time(front))
     test = TimeCommand()
     while True:
         times = input()
-        # front = input()
         print(test.msg_to_command(times))
