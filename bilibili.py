@@ -23,6 +23,9 @@ def get_dynamic(card: dict):
     item = {}
     try:
         desc = card['desc']
+        
+        user_name = desc['user_profile']['info']['uname']
+        item['user_name'] = user_name
         item['timestamp'] = desc['timestamp']
         item['dynamic_id'] = desc['dynamic_id_str']
 
@@ -72,17 +75,18 @@ async def room_statu(room_id: str):
             raise ValueError(str(response))
 
 
-async def monitor():
+async def monitor(timestamp: int):
     config = yaml.load(open('./bilibili.yaml', 'rb'))
     user_ids = config['user_ids']
     room_ids = config['room_ids']
 
-    new_dynamics = await user_new_dynamic(user_ids, 1583232556)
+    new_dynamics = await user_new_dynamic(user_ids, timestamp)
 
-    live_rooms = [room_id for room_id in room_ids if await room_statu(room_id)]
+    live_rooms = ['https://live.bilibili.com/' + str(room_id) 
+                  for room_id in room_ids if await room_statu(room_id)]
 
     return {'dynamic': new_dynamics, 'live': live_rooms}
 
 
 if __name__ == "__main__":
-    asyncio.run(monitor())
+    asyncio.run(monitor(1583232556))
