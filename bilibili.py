@@ -1,8 +1,9 @@
 import yaml
-import json
 import asyncio
 import traceback
 from aiohttp import request
+
+from dynamic import Dynamic
 
 dynamic_keys_from_type = {
     1: ['item', 'content'],
@@ -19,22 +20,11 @@ def get_value(obj: dict, keys: list):
 
 
 def get_dynamic(card: dict):
-    item = {}
     try:
-        desc = card['desc']
-        user_name = desc['user_profile']['info']['uname']
-        item['user_name'] = user_name
-        item['timestamp'] = desc['timestamp']
-        item['dynamic_id'] = desc['dynamic_id_str']
-
-        _card = json.loads(card['card'])
-
-        _type = desc['type']
-        dynamic_keys = dynamic_keys_from_type[_type]
-        item['dynamic'] = get_value(_card, dynamic_keys)
+        _dynamic = Dynamic(card)
     except Exception:
         traceback.print_exc()
-    return item
+    return _dynamic
 
 
 async def user_dynamic(user_id: str) -> dict:
@@ -46,23 +36,22 @@ async def user_dynamic(user_id: str) -> dict:
 
 
 def filter_dynamic(items: list, timestamp: int):
-    return [item for item in items if item['timestamp'] > timestamp]
+    return [item for item in items if item.timestamp > timestamp]
 
 
-async def user_new_dynamic(user_ids, timestamp: int):
+async def user_new_dynamic(user_ids: list, timestamp: int):
     new_dynamics = []
     for user_id in user_ids:
         dynamics = await user_dynamic(user_id)
 
         _new_dynamics = filter_dynamic(dynamics, timestamp)
-        print(len(_new_dynamics) != 0)
         if _new_dynamics != []:
-            new_dynamics.append(_new_dynamics)
+            new_dynamics.extend(_new_dynamics)
 
     return new_dynamics
 
 
-async def room_statu(room_id: str):
+async def room_status(room_id: str):
     room_info_url = 'https://api.live.bilibili.com/room/v1/Room/get_info'
     async with request('GET', room_info_url, params={'room_id': room_id}) as resp:
         response = (await resp.json())
@@ -75,24 +64,15 @@ async def room_statu(room_id: str):
 
 async def monitor(timestamp: int):
     config = yaml.safe_load(open('./bilibili.yaml', 'rb'))
-    user_ids = config['user_ids']
-    room_ids = config['room_ids']
 
-    if type(user_ids) != list:
-        user_ids = [user_ids]
+    user_monitor_config = config['user_monitor']
+    room_monitor_config = config['room_monitor']
 
-    if type(room_ids) != list:
-        room_ids = [room_ids]
+    new_dynamics = await user_new_dynamic(user_monitor_config['user_ids'], timestamp)
 
-    print(user_ids)
-    print(room_ids)
+    live_room_ids = [room_id for room_id in room_monitor_config['room_ids'] if await room_status(room_id)]
 
-    new_dynamics = await user_new_dynamic(user_ids, timestamp)
-
-    live_rooms = ['https://live.bilibili.com/' + str(room_id)
-                  for room_id in room_ids if await room_statu(room_id)]
-
-    return {'dynamic': new_dynamics, 'live': live_rooms}
+    return {'dynamic': new_dynamics, 'live': live_room_ids}
 
 
 if __name__ == "__main__":
