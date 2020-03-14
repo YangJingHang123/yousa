@@ -22,16 +22,13 @@ def get_value(obj: dict, keys: list):
 
 
 def get_dynamic(card: dict):
-    try:
-        _dynamic = Dynamic(card)
-    except Exception:
-        traceback.print_exc()
+    _dynamic = Dynamic(card)
     return _dynamic
 
 
 async def user_dynamic(user_id: str) -> dict:
     api_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history'
-    async with request("GET", api_url, headers=headers, params={'host_uid': user_id, 'visitor_id': "0", 'offset_dynamic_id': "0"}) as response:
+    async with request("GET", api_url, headers=headers, params={'host_uid': user_id, 'visitor_id': "0", 'offset_dynamic_id': "0", "need_top": "1"}) as response:
         cards = (await response.json())['data']['cards']
 
         return [get_dynamic(card) for card in cards]

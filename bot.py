@@ -10,8 +10,6 @@ from bilibili import monitor
 
 cq_url = 'http://127.0.0.1:5700/'
 
-
-
 ONE_HOUR = 3600
 
 bot = CQHttp(api_root=cq_url)
