@@ -62,13 +62,24 @@ async def room_status(room_id: str):
             raise ValueError(str(response))
 
 
+def process_config(configs, type):
+    resp = dict()
+    _id = 'user_id' if type == 'dynamic' else 'room_id'
+    _ids = 'user_ids' if type == 'dynamic' else 'room_ids'
+    resp[_ids] = list()
+    for config in configs:
+        resp.update({config[_id]: config})
+        resp[_ids].append(config[_id])
+    return resp
+
+
 async def monitor(timestamp: int):
     config = yaml.safe_load(open('./bilibili.yaml', 'rb'))
 
-    user_monitor_config = config['user_monitor']
-    room_monitor_config = config['room_monitor']
+    dynamic_monitor_config = process_config(config['user_monitor'], 'dynamic')
+    room_monitor_config = process_config(config['room_monitor'], 'room')
 
-    new_dynamics = await user_new_dynamic(user_monitor_config['user_ids'], timestamp)
+    new_dynamics = await user_new_dynamic(dynamic_monitor_config['user_ids'], timestamp)
 
     live_room_ids = [room_id for room_id in room_monitor_config['room_ids'] if await room_status(room_id)]
 
