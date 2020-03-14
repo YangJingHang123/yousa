@@ -12,6 +12,8 @@ dynamic_keys_from_type = {
     8: ['dynamic']
 }
 
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0'}
+
 
 def get_value(obj: dict, keys: list):
     for key in keys:
@@ -29,7 +31,7 @@ def get_dynamic(card: dict):
 
 async def user_dynamic(user_id: str) -> dict:
     api_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history'
-    async with request("GET", api_url, params={'host_uid': user_id, 'visitor_id': "0", 'offset_dynamic_id': "0"}) as response:
+    async with request("GET", api_url, headers=headers, params={'host_uid': user_id, 'visitor_id': "0", 'offset_dynamic_id': "0"}) as response:
         cards = (await response.json())['data']['cards']
 
         return [get_dynamic(card) for card in cards]
@@ -53,7 +55,7 @@ async def user_new_dynamic(user_ids: list, timestamp: int):
 
 async def room_status(room_id: str):
     room_info_url = 'https://api.live.bilibili.com/room/v1/Room/get_info'
-    async with request('GET', room_info_url, params={'room_id': room_id}) as resp:
+    async with request('GET', room_info_url, headers=headers, params={'room_id': room_id}) as resp:
         response = (await resp.json())
 
         if response['msg'] == 'ok':

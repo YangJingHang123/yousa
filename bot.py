@@ -10,6 +10,8 @@ from bilibili import monitor
 
 cq_url = 'http://127.0.0.1:5700/'
 
+
+
 ONE_HOUR = 3600
 
 bot = CQHttp(api_root=cq_url)
@@ -36,7 +38,7 @@ async def dynamic_and_live_repost():
         for room_id in live_room_ids:
             for group_id in room_monitor_config[room_id]['group_ids']:
                 if live_states.get(room_id, None) is None or int(time.time()) > live_states.get(room_id, None)+ONE_HOUR:
-                    await bot.send({'group_id': group_id}, '正在直播中: https://live.bilibili.com/{room_id}'.format(room_id))
+                    await bot.send({'group_id': group_id}, '正在直播中: https://live.bilibili.com/{room_id}'.format(room_id=room_id))
                     live_states[room_id] = int(time.time())
 
     last_time = int(time.time())
